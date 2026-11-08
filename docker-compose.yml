@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # 1. Aplikasi Web (Website Kos-Kosan / PHP + Nginx)
+  webapp:
+    image: php:8.1-apache
+    container_name: webapp_kos
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./src:/var/www/html
+    networks:
+      - app-network
+
+  # 2. Database MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword123
+      MYSQL_DATABASE: db_kos
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  # 3. Database Proxy (ProxySQL) untuk membagi beban database
+  proxysql:
+    image: proxysql/proxysql:latest
+    container_name: db_proxysql
+    restart: always
+    ports:
+      - "6033:6033"
+    networks:
+      - app-network
+
+volumes:
+  mysql_data:
+
+networks:
+  app-network:
+    driver: bridge
